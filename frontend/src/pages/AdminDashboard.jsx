@@ -2,9 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { 
   LayoutDashboard, Package, Users, ShoppingBag, 
   Settings, TrendingUp, DollarSign, PackageCheck,
-  MoreVertical, Edit, Trash
+  MoreVertical
 } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 

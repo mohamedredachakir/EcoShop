@@ -1,11 +1,83 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   LayoutDashboard, Package, Users, ShoppingBag, 
   Settings, TrendingUp, DollarSign, PackageCheck,
   MoreVertical, Edit, Trash
 } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
+  const { user, loading } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      if (!user?.role || user.role !== 'admin') {
+        setDashboardLoading(false);
+        return;
+      }
+
+      setDashboardLoading(true);
+      try {
+        const [productsRes, ordersRes, usersRes] = await Promise.all([
+          api.get('/products'),
+          api.get('/orders'),
+          api.get('/users'),
+        ]);
+
+        setProducts(productsRes.data || []);
+        setOrders(ordersRes.data?.data || ordersRes.data || []);
+        setCustomers(usersRes.data || []);
+      } catch (error) {
+        console.error('Failed to load dashboard data', error);
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
+
+    if (!loading) {
+      fetchDashboard();
+    }
+  }, [loading, user]);
+
+  const stats = useMemo(() => {
+    const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+    const activeOrders = orders.filter((order) => ['pending', 'confirmed'].includes(order.status)).length;
+
+    return [
+      { label: 'Total Revenue', value: `$${revenue.toFixed(2)}`, change: '+0.0%', icon: <DollarSign className="text-primary" /> },
+      { label: 'Active Orders', value: String(activeOrders), change: '+0.0%', icon: <PackageCheck className="text-primary" /> },
+      { label: 'Total Customers', value: String(customers.length), change: '+0.0%', icon: <Users className="text-primary" /> },
+      { label: 'Avg. Order Value', value: orders.length ? `$${(revenue / orders.length).toFixed(2)}` : '$0.00', change: '+0.0%', icon: <TrendingUp className="text-primary" /> },
+    ];
+  }, [customers.length, orders]);
+
+  if (!loading && (!user || user.role !== 'admin')) {
+    return (
+      <div className="container" style={{ padding: '80px 0' }}>
+        <div className="card" style={{ padding: '40px', maxWidth: '640px', margin: '0 auto' }}>
+          <h1 style={{ fontSize: '32px', marginBottom: '12px' }}>Admin access required</h1>
+          <p style={{ color: 'var(--on-surface-variant)' }}>
+            You do not have permission to view this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || dashboardLoading) {
+    return (
+      <div className="container" style={{ padding: '80px 0' }}>
+        <div style={{ textAlign: 'center', color: 'var(--on-surface-variant)' }}>Loading dashboard...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-dashboard" style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
       {/* Sidebar */}
@@ -54,12 +126,7 @@ const AdminDashboard = () => {
 
         {/* Stats Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
-          {[
-            { label: 'Total Revenue', value: '$45,231.89', change: '+20.1%', icon: <DollarSign className="text-primary" /> },
-            { label: 'Active Orders', value: '156', change: '+12.5%', icon: <PackageCheck className="text-primary" /> },
-            { label: 'Total Customers', value: '2,420', change: '+4.3%', icon: <Users className="text-primary" /> },
-            { label: 'Avg. Order Value', value: '$86.20', change: '-2.1%', icon: <TrendingUp className="text-primary" /> }
-          ].map((stat, i) => (
+          {stats.map((stat, i) => (
             <div key={i} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <div style={{ backgroundColor: 'var(--primary-container)', padding: '10px', borderRadius: '12px' }}>
@@ -93,29 +160,24 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {[
-                { id: '#ORD-7231', customer: 'Sarah Johnson', status: 'Delivered', date: 'Oct 20, 2023', total: '$124.50' },
-                { id: '#ORD-7232', customer: 'Michael Chen', status: 'Processing', date: 'Oct 21, 2023', total: '$45.00' },
-                { id: '#ORD-7233', customer: 'Emma Wilson', status: 'Shipped', date: 'Oct 21, 2023', total: '$89.20' },
-                { id: '#ORD-7234', customer: 'James Miller', status: 'Delivered', date: 'Oct 22, 2023', total: '$210.00' },
-              ].map((row, i) => (
+              {orders.slice(0, 4).map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--outline-variant)', fontSize: '14px' }}>
-                  <td style={{ padding: '16px 24px', fontWeight: 600 }}>{row.id}</td>
-                  <td style={{ padding: '16px 24px' }}>{row.customer}</td>
+                  <td style={{ padding: '16px 24px', fontWeight: 600 }}>#{row.id}</td>
+                  <td style={{ padding: '16px 24px' }}>{row.user?.name || 'Customer'}</td>
                   <td style={{ padding: '16px 24px' }}>
                     <span style={{
                       padding: '4px 12px',
                       borderRadius: '12px',
                       fontSize: '12px',
                       fontWeight: 600,
-                      backgroundColor: row.status === 'Delivered' ? '#e8f5e9' : row.status === 'Processing' ? '#fff3e0' : '#e3f2fd',
-                      color: row.status === 'Delivered' ? '#2e7d32' : row.status === 'Processing' ? '#ef6c00' : '#1565c0'
+                      backgroundColor: row.status === 'delivered' ? '#e8f5e9' : row.status === 'confirmed' ? '#fff3e0' : '#e3f2fd',
+                      color: row.status === 'delivered' ? '#2e7d32' : row.status === 'confirmed' ? '#ef6c00' : '#1565c0'
                     }}>
                       {row.status}
                     </span>
                   </td>
-                  <td style={{ padding: '16px 24px', color: 'var(--on-surface-variant)' }}>{row.date}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: 600 }}>{row.total}</td>
+                  <td style={{ padding: '16px 24px', color: 'var(--on-surface-variant)' }}>{row.created_at ? new Date(row.created_at).toLocaleDateString() : '-'}</td>
+                  <td style={{ padding: '16px 24px', fontWeight: 600 }}>${Number(row.total_amount || 0).toFixed(2)}</td>
                   <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                     <button style={{ color: 'var(--on-surface-variant)' }}><MoreVertical size={18} /></button>
                   </td>

@@ -134,7 +134,6 @@ const Products = () => {
                       <ProductCard key={product.id} product={{
                         ...product,
                         category: product.category?.name,
-                        image: product.image_path ? `http://localhost:8000/storage/${product.image_path}` : null
                       }} />
                     ))}
                   </div>

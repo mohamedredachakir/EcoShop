@@ -7,6 +7,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const persistToken = (responseData) => {
+    const token = responseData?.access_token || responseData?.token;
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    return token;
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
@@ -25,16 +33,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await api.post('/login', { email, password });
-    const { token, user } = response.data;
-    localStorage.setItem('token', token);
+    const { user } = response.data;
+    persistToken(response.data);
     setUser(user);
     return user;
   };
 
   const register = async (userData) => {
     const response = await api.post('/register', userData);
-    const { token, user } = response.data;
-    localStorage.setItem('token', token);
+    const { user } = response.data;
+    persistToken(response.data);
     setUser(user);
     return user;
   };

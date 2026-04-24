@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
     <div className="card" style={{ padding: 0, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ position: 'relative', aspectRatio: '1', backgroundColor: '#f9f9f9' }}>
         <img 
-          src={product.image || 'https://images.unsplash.com/photo-1591336361888-4baf571fa446?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'} 
+          src={product.image_url || product.image || 'https://images.unsplash.com/photo-1591336361888-4baf571fa446?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'} 
           alt={product.name} 
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />

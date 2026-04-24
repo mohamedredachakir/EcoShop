@@ -4,11 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { cartCount, setIsCartOpen } = useCart();
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [authModal, setAuthModal] = useState(null);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -89,7 +90,7 @@ const Navbar = () => {
             <button 
               className="btn btn-primary" 
               style={{ padding: '10px 20px' }}
-              onClick={() => setIsLoginOpen(true)}
+              onClick={() => setAuthModal('login')}
             >
               Sign In
             </button>
@@ -97,10 +98,15 @@ const Navbar = () => {
         </div>
       </div>
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onSwitchToRegister={() => {}} // TODO: Register modal
+      <LoginModal
+        isOpen={authModal === 'login'}
+        onClose={() => setAuthModal(null)}
+        onSwitchToRegister={() => setAuthModal('register')}
+      />
+      <RegisterModal
+        isOpen={authModal === 'register'}
+        onClose={() => setAuthModal(null)}
+        onSwitchToLogin={() => setAuthModal('login')}
       />
 
       <style dangerouslySetInnerHTML={{ __html: `

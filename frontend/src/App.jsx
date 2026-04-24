@@ -7,10 +7,36 @@ import CartDrawer from './components/CartDrawer';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import AdminDashboard from './pages/AdminDashboard';
+import Checkout from './pages/Checkout';
 
-// Placeholder pages for others
-const Profile = () => <div className="container" style={{ padding: '80px 0' }}><h2>User Profile Page</h2><p>Coming soon based on Stitch design.</p></div>;
-const Checkout = () => <div className="container" style={{ padding: '80px 0' }}><h2>Checkout Page</h2><p>Process your order securely.</p></div>;
+const StaticPage = ({ title, description }) => (
+  <div className="container" style={{ padding: '80px 0', maxWidth: '900px' }}>
+    <div className="card" style={{ padding: '40px' }}>
+      <h1 style={{ fontSize: '40px', marginBottom: '16px' }}>{title}</h1>
+      <p style={{ color: 'var(--on-surface-variant)', fontSize: '18px', lineHeight: 1.7 }}>
+        {description}
+      </p>
+    </div>
+  </div>
+);
+
+const Profile = () => (
+  <StaticPage
+    title="User Profile"
+    description="Your profile page is available from the navbar after signing in. Add profile editing here when account updates are required."
+  />
+);
+
+const pageText = {
+  about: 'EcoShop curates sustainable essentials that combine thoughtful design, responsible sourcing, and everyday usefulness.',
+  sustainability: 'We focus on products and partners that reduce waste, support ethical production, and make low-impact choices easier.',
+  contact: 'Reach the team through the support channels you want to expose here, or add a contact form backed by your API.',
+  faq: 'Add your most common customer questions here, including shipping, returns, payments, and product care.',
+  shipping: 'Explain delivery timeframes, carriers, tracking, and any regions you support for orders.',
+  returns: 'Describe your return window, eligibility rules, and how customers request replacements or refunds.',
+  privacy: 'Publish your privacy policy here, including how account, cart, and order data are processed.',
+  terms: 'Publish your terms of service here, including purchase rules, delivery conditions, and account usage.',
+};
 
 function App() {
   return (
@@ -24,9 +50,20 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
+                <Route path="/products/new" element={<Products />} />
+                <Route path="/products/best" element={<Products />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/about" element={<StaticPage title="Our Story" description={pageText.about} />} />
+                <Route path="/sustainability" element={<StaticPage title="Sustainability" description={pageText.sustainability} />} />
+                <Route path="/contact" element={<StaticPage title="Contact" description={pageText.contact} />} />
+                <Route path="/faq" element={<StaticPage title="FAQs" description={pageText.faq} />} />
+                <Route path="/shipping" element={<StaticPage title="Shipping" description={pageText.shipping} />} />
+                <Route path="/returns" element={<StaticPage title="Returns" description={pageText.returns} />} />
+                <Route path="/privacy" element={<StaticPage title="Privacy Policy" description={pageText.privacy} />} />
+                <Route path="/terms" element={<StaticPage title="Terms of Service" description={pageText.terms} />} />
+                <Route path="*" element={<StaticPage title="Page not found" description="The page you tried to open does not exist. Use the navigation to return to the store." />} />
               </Routes>
             </main>
             
